@@ -13,10 +13,10 @@ def get_train_val_ds(dataset_config: Dict) -> Tuple[Dataset, Dataset]:
         Tuple[Dataset, Dataset]: Training and validation datasets.
     """
     dataset = load_dataset(dataset_config["dataset_name"])
-    dataset = dataset.shuffle().select(range(dataset_config["num_samples"]))
-
-    train_dataset = dataset["train"]
-    val_dataset = dataset["validation"]
+    
+    # Shuffle and select samples from both train and validation sets
+    train_dataset = dataset["train"].shuffle(seed=42).select(range(dataset_config.get("num_train_samples", len(dataset["train"]))))
+    val_dataset = dataset["validation"].shuffle(seed=42).select(range(dataset_config.get("num_val_samples", len(dataset["validation"]))))
 
     return train_dataset, val_dataset
 

@@ -1,10 +1,12 @@
 base_config:
   model_name: "microsoft/Phi-3-mini-4k-instruct"
   dataset_name: "OpenAssistant/oasst1"
+  num_train_samples: 10000  # Add this line
+  num_val_samples: 1000     # Add this line
 
 training_config:
   bf16: True
-  do_eval: False
+  do_eval: True  # Changed from False to True
   learning_rate: 5.0e-06
   log_level: "info"
   logging_steps: 20
@@ -37,13 +39,19 @@ peft_config:
   modules_to_save: null
 
 model_config:
+  model_name: "microsoft/Phi-3-mini-4k-instruct"  # Add this line
   torch_dtype: "bfloat16"
   trust_remote_code: True
   use_cache: False
   attn_implementation: "eager"
+  max_length: 2048  # Add this line
 
 bnb_config:
   load_in_4bit: True
   bnb_4bit_compute_dtype: "float16"
   bnb_4bit_quant_type: "nf4"
   bnb_4bit_use_double_quant: True
+
+preprocessing:
+  system_message: "You are General Knowledge Assistant. Answer the questions based on the provided information. Be succinct and use first-principles thinking to answer the questions."
+  max_length: 2048  # Add this line
