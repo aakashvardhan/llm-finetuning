@@ -46,8 +46,8 @@ def main():
     # Start training
     trainer.train()
 
-    # Save the final model
-    trainer.save_model(config["training"]["output_dir"])
+    # Save the final pre-trained model
+    trainer.model.save_pretrained(config["training"]["output_dir"])
 
 
 if __name__ == "__main__":
