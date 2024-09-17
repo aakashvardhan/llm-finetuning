@@ -1,31 +1,54 @@
-import datasets
-from peft import LoraConfig
-import torch
-import transformers
+import logging
+from transformers import TrainingArguments
+from datasets import set_caching_enabled
 from trl import SFTTrainer
-from transformers import (
-    AutoModelForCausalLM,
-    AutoTokenizer,
-    TrainingArguments,
-    BitsAndBytesConfig,
-)
-from config import BaseConfig, PeftConfig, TrainingConfig, BnbConfig
+from config import load_config
+from data_processing import get_train_val_ds, preprocess_datasets
+from model_utils import setup_model_and_tokenizer
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
-bnb_config = BitsAndBytesConfig(**BnbConfig.__dict__)
-lora_config = LoraConfig(**PeftConfig.__dict__)
-train_config = TrainingConfig(**TrainingConfig.__dict__)
+def main():
+    # Load configuration
+    config = load_config("config.yaml")
 
-model = AutoModelForCausalLM.from_pretrained(
-    BaseConfig.model_name,
-    quantization_config=bnb_config,
-    torch_dtype=torch.float16,
-    trust_remote_code=True,
-    use_cache=False,
-    attn_implementation="eager",
-)
+    # Disable caching to save memory
+    set_caching_enabled(False)
 
-tokenizer = AutoTokenizer.from_pretrained(BaseConfig.model_name)
-tokenizer.model_max_length = 2048
-tokenizer.pad_token = tokenizer.eos_token
-tokenizer.padding_side = "right"
+    # Get datasets
+    train_ds, val_ds = get_train_val_ds(config["dataset"])
+
+    # Setup model and tokenizer
+    model, tokenizer = setup_model_and_tokenizer(config["model"])
+
+    # Preprocess datasets
+    train_ds, val_ds = preprocess_datasets(
+        train_ds, val_ds, tokenizer, config["preprocessing"]
+    )
+
+    # Setup training arguments
+    training_args = TrainingArguments(**config["training"])
+
+    # Initialize trainer
+    trainer = SFTTrainer(
+        model=model,
+        train_dataset=train_ds,
+        eval_dataset=val_ds,
+        peft_config=config["peft"],
+        dataset_text_field="conversation",
+        max_seq_length=config["model"]["max_length"],
+        tokenizer=tokenizer,
+        args=training_args,
+    )
+
+    # Start training
+    trainer.train()
+
+    # Save the final model
+    trainer.save_model(config["training"]["output_dir"])
+
+
+if __name__ == "__main__":
+    main()

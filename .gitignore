@@ -1,1 +1,3 @@
 ../notebooks/qlora_phi2.ipynb
+
+*.pyc
