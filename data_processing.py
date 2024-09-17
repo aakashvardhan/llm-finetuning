@@ -42,21 +42,38 @@ def preprocess_datasets(
 
     def preprocess_function(examples):
         system_message = preprocessing_config.get("system_message", "")
+        
+        # Group examples by conversation
+        conversations = {}
+        for role, text, parent_id in zip(examples["role"], examples["text"], examples["parent_id"]):
+            if parent_id not in conversations:
+                conversations[parent_id] = {"prompter": [], "assistant": []}
+            conversations[parent_id][role].append(text)
 
-        conversations = []
-        for prompt, response in zip(examples["prompt"], examples["response"]):
-            conversation = f"{system_message}\nHuman: {prompt}\nAssistant: {response}"
-            conversations.append(conversation)
+        processed_conversations = []
+        for conv in conversations.values():
+            prompts = conv["prompter"]
+            responses = [" ".join(conv["assistant"])]
+
+            if not prompts or len(prompts) != len(responses):
+                continue
+
+            base_prompt = prompts[0]
+            augmented_prompts = [base_prompt] + [f"{base_prompt} {prompt}" for prompt in prompts[1:]]
+
+            for prompt, response in zip(augmented_prompts, responses):
+                conversation = f"{system_message}\nHuman: {prompt}\nAssistant: {response}"
+                processed_conversations.append(conversation)
 
         tokenized = tokenizer(
-            conversations,
+            processed_conversations,
             truncation=True,
             max_length=preprocessing_config.get("max_length", 2048),
             padding="max_length",
         )
 
         return {
-            "conversation": conversations,
+            "conversation": processed_conversations,
             "input_ids": tokenized["input_ids"],
             "attention_mask": tokenized["attention_mask"],
         }
