@@ -22,10 +22,10 @@ def main():
     disable_caching()
 
     # Get datasets
-    train_ds, val_ds = get_train_val_ds(config["dataset"])
+    train_ds, val_ds = get_train_val_ds(config["base_config"])
 
     # Setup model and tokenizer
-    model, tokenizer = setup_model_and_tokenizer(config["model"])
+    model, tokenizer = setup_model_and_tokenizer(config["model_config"])
 
     # Preprocess datasets
     train_ds, val_ds = preprocess_datasets(
@@ -33,16 +33,16 @@ def main():
     )
 
     # Setup training arguments
-    training_args = TrainingArguments(**config["training"], report_to=["wandb"])
+    training_args = TrainingArguments(**config["training_config"], report_to=["wandb"])
 
     # Initialize trainer
     trainer = SFTTrainer(
         model=model,
         train_dataset=train_ds,
         eval_dataset=val_ds,
-        peft_config=config["peft"],
+        peft_config=config["peft_config"],
         dataset_text_field="conversation",
-        max_seq_length=config["model"]["max_length"],
+        max_seq_length=config["model_config"]["max_length"],
         tokenizer=tokenizer,
         args=training_args,
     )
@@ -60,7 +60,7 @@ def main():
     wandb.finish()
 
     # Save the final pre-trained model
-    trainer.model.save_pretrained(config["training"]["output_dir"])
+    trainer.model.save_pretrained(config["training_config"]["output_dir"])
 
 
 if __name__ == "__main__":
