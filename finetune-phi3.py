@@ -1,6 +1,7 @@
 import logging
+import wandb
 from transformers import TrainingArguments
-from datasets import set_caching_enabled
+from datasets import disable_caching
 from trl import SFTTrainer
 from config import load_config
 from data_processing import get_train_val_ds, preprocess_datasets
@@ -14,8 +15,11 @@ def main():
     # Load configuration
     config = load_config("config.yaml")
 
+    # Initialize wandb
+    wandb.init(project="phi-3-fine-tuning", config=config, name="qloratest")
+
     # Disable caching to save memory
-    set_caching_enabled(False)
+    disable_caching()
 
     # Get datasets
     train_ds, val_ds = get_train_val_ds(config["dataset"])
@@ -29,7 +33,7 @@ def main():
     )
 
     # Setup training arguments
-    training_args = TrainingArguments(**config["training"])
+    training_args = TrainingArguments(**config["training"], report_to=["wandb"])
 
     # Initialize trainer
     trainer = SFTTrainer(
@@ -45,6 +49,15 @@ def main():
 
     # Start training
     trainer.train()
+
+    # Evaluate the model
+    trainer.evaluate()
+
+    # Log the evaluation results
+    wandb.log({"eval_loss": trainer.state.log_history[-1]["eval_loss"]})
+
+    # close wandb
+    wandb.finish()
 
     # Save the final pre-trained model
     trainer.model.save_pretrained(config["training"]["output_dir"])
