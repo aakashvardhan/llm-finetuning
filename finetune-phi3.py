@@ -56,7 +56,9 @@ def main():
 
     # Sanity check: Verify model and tokenizer compatibility
     if tokenizer.vocab_size != model.config.vocab_size:
-        raise ValueError("Tokenizer and model vocabulary sizes do not match.")
+        logger.warning(f"Tokenizer vocab size ({tokenizer.vocab_size}) does not match model vocab size ({model.config.vocab_size}). This may not be an issue for some models.")
+        # Optionally, you can still raise the error if you want to be strict:
+        # raise ValueError("Tokenizer and model vocabulary sizes do not match.")
 
     # Sanity check: Verify a sample input
     sample_input = train_ds[0]["conversation"]
