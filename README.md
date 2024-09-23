@@ -1,4 +1,4 @@
-# LLM Finetuning
+# Finetuning Microsoft Phi-3 Mini 4k Instruct Model
 
 
 ## Project Overview
