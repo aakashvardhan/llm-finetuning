@@ -7,39 +7,46 @@ This project involves fine-tuning the `microsoft/Phi-3-mini-4k-instruct` model u
 
 ## Optimization Strategies
 
-- Implements QLoRA strategy for efficient training
-    - QLoRA allows for fine-tuning models with 4-bit quantization, reducing memory usage and enabling training on GPUs with less VRAM.
+### QLoRA Implementation
 
-- Supports 4-bit quantization using `bitsandbytes`
-    - This allows for training on GPUs with less VRAM.
+- Utilizes Quantized Low-Rank Adaptation for efficient training
+- Enables fine-tuning with 4-bit quantization, significantly reducing memory usage
+- Facilitates training on GPUs with limited VRAM
+
+### 4-bit Quantization
+
+- Implements 4-bit quantization using bitsandbytes
+- Further optimizes GPU memory utilization, allowing for training on less powerful hardware
 
 
 ## Project Structure
 
-- `config.yaml`: Configuration file for model, training, and data processing settings
-- `finetune-phi3.py`: Main script for fine-tuning the model
-- `model_utils.py`: Utility functions for setting up the model and tokenizer
-- `data_processing.py`: Functions for loading and preprocessing the dataset
-
+```
+.
+├── config.yaml           # Configuration for model, training, and data processing
+├── finetune-phi3.py      # Main fine-tuning script
+├── model_utils.py        # Utility functions for model and tokenizer setup
+└── data_processing.py    # Dataset loading and preprocessing functions
+```
 
 ## Installation
 
 Clone this repository:
 
-```
+```bash
 git clone https://github.com/aakashvardhan/microsoft-phi3-finetuning
 cd microsoft-phi3-finetuning
 ```
 
 Install the required packages:
 
-```
+```bash
 pip install transformers datasets peft trl bitsandbytes wandb
 ```
 
 Set up a Weights & Biases account and log in:
 
-```
+```bash
 wandb login
 ```
 
@@ -49,7 +56,7 @@ wandb login
 Adjust the settings in config.yaml as needed.
 Run the fine-tuning script:
 
-```
+```bash
 python finetune-phi3.py
 ```
 
@@ -61,7 +68,7 @@ After training, the model will be saved in the directory specified by `output_di
 
 [Click here to view the Hugging Face Spaces](https://huggingface.co/spaces/aakashv100/phi3-oass1-chatbot)
 
-![Hugging Face Spaces](./assets/hf_spaces.png)
+![Hugging Face Spaces](https://github.com/aakashvardhan/microsoft-phi3-finetuning/blob/main/asset/Screenshot%202024-09-20%20at%2012.46.54%E2%80%AFPM.png)
 
 ## W&B Report
 
